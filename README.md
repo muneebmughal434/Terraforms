@@ -17,7 +17,7 @@ This repo deploys a static `index.html` site to an S3 **website** bucket using *
 ## Local test (optional)
 
 ```bash
-terraform init
+terraform  init
 terraform apply -auto-approve
 # then: terraform destroy -auto-approve
 ```
