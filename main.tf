@@ -28,7 +28,7 @@ resource "aws_s3_bucket" "site" {
   }
 }
 
-# Allow public website hosting (for lab/testing only)
+# Public access block at the BUCKET level set to false so ACLs can work (lab only)
 resource "aws_s3_bucket_public_access_block" "site" {
   bucket                  = aws_s3_bucket.site.id
   block_public_acls       = false
@@ -37,54 +37,52 @@ resource "aws_s3_bucket_public_access_block" "site" {
   restrict_public_buckets = false
 }
 
-# Website configuration
+# Website configuration (index + error to index)
 resource "aws_s3_bucket_website_configuration" "site" {
   bucket = aws_s3_bucket.site.id
 
-  index_document {
-    suffix = "index.html"
-  }
+  index_document { suffix = "index.html" }
+  error_document { key    = "index.html" }
 
-  error_document {
-    key = "index.html"
-  }
-
+  # Ensure PAB is set first
   depends_on = [aws_s3_bucket_public_access_block.site]
 }
 
-# Public read policy for website objects (testing only)
-data "aws_iam_policy_document" "public_read" {
-  statement {
-    sid     = "PublicReadGetObject"
-    effect  = "Allow"
-    actions = ["s3:GetObject"]
-    resources = ["${aws_s3_bucket.site.arn}/*"]
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
-    }
+# Enable object ACLs (required for public-read ACLs)
+resource "aws_s3_bucket_ownership_controls" "site" {
+  bucket = aws_s3_bucket.site.id
+  rule {
+    object_ownership = "ObjectWriter"
   }
 }
 
-resource "aws_s3_bucket_policy" "public_read" {
+# Make the bucket publicly readable via ACL (lab only)
+resource "aws_s3_bucket_acl" "site" {
   bucket = aws_s3_bucket.site.id
-  policy = data.aws_iam_policy_document.public_read.json
+  acl    = "public-read"
+  depends_on = [aws_s3_bucket_ownership_controls.site]
 }
 
-# Upload the page
+# Upload the page (and make the object itself public)
 resource "aws_s3_object" "index" {
   bucket       = aws_s3_bucket.site.id
   key          = "index.html"
   source       = "${path.module}/index.html"
   content_type = "text/html"
   etag         = filemd5("${path.module}/index.html")
+  acl          = "public-read"
+
+  # Ensure ACLs/ownership controls applied before uploading
+  depends_on = [aws_s3_bucket_acl.site]
 }
 
+# --------- Outputs (keep these here OR remove outputs.tf) ---------
 output "bucket_name" {
-  value = aws_s3_bucket.site.bucket
+  value       = aws_s3_bucket.site.bucket
+  description = "Name of the S3 bucket"
 }
 
 output "website_endpoint" {
-  value = aws_s3_bucket_website_configuration.site.website_endpoint
-  description = "Open this URL to view the site after apply."
+  value       = aws_s3_bucket_website_configuration.site.website_endpoint
+  description = "S3 static website URL"
 }
