@@ -14,7 +14,7 @@ This repo deploys a static `index.html` site to an S3 **website** bucket using *
 
 > ⚠️ Public S3 website access is for lab/testing only. Do **not** use this setup for production.
 
-## Local test (optional)
+## Local test  (optional)
 
 ```bash
 terraform  init
