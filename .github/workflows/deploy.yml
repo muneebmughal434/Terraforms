@@ -19,13 +19,13 @@ jobs:
         with:
           terraform_version: 1.6.0
 
-      - name: Sanity checks (who/where/what files)
+      - name: Sanity checks (where am I / what files)
         run: |
-          aws --version || true
           pwd
           ls -la
           echo "--- repo tree ---"
-          ls -R | head -n 200
+          ls -R | head -n 300
+          terraform -version
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -35,13 +35,13 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Terraform Init
-        run: terraform init -input=false -upgrade
+        run: terraform init -input=false -upgrade -no-color
 
       - name: Terraform Validate
-        run: terraform validate
+        run: terraform validate -no-color
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve -no-color
 
       - name: Show website URL in summary
         if: success()
