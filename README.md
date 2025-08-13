@@ -10,7 +10,7 @@ This repo deploys a static `index.html` site to an S3 **website** bucket using *
    - `AWS_SECRET_ACCESS_KEY`
    - `AWS_REGION` = `us-east-1` (or your region)
 3. Push to `main`. A workflow will run `terraform init` and `terraform apply`.
-4. After it completes, open the **Actions logs** and copy the `website_endpoint` output.
+4. After it completes,  open the **Actions logs** and copy the `website_endpoint` output.
 
 > ⚠️ Public S3 website access is for lab/testing only. Do **not** use this setup for production.
 
