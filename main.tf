@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = "us-east-1"
 }
 
 # Generate a unique bucket suffix so names don't collide globally
